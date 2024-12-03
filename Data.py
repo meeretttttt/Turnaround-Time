@@ -14,7 +14,7 @@ def process ():
     # Dynamisch die Zeitspalten basierend auf den Phasen-Schlüsseln auswählen
     time_columns = [f"{phase} in Minuten" for phase in phases.keys()]
     plot(df_TAT, phases, time_columns)
-    df_cleaned = remove_outliers(df_TAT)
+    df_cleaned = remove_outliers(df_TAT, time_columns)
     plot_cleaned(df_cleaned, time_columns) 
     return df_cleaned
 

@@ -1,9 +1,8 @@
 import streamlit as st
 from Data import process 
 
-st.write('Hello, world!')
-
+st.title('Turnaround Time Calculator')
 st.balloons()
 
-process()
-
+df = process()
+st.dataframe(df)
