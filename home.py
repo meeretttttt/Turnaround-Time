@@ -1,11 +1,10 @@
 import streamlit as st
 
-def main():
-    st.balloons()
+st.write('Hello, world!')
+
+st.balloons()
 
 
 
 
 
-if __name__ == "__main__":
-    main()
