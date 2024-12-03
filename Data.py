@@ -21,7 +21,7 @@ def process ():
 def load_data ():
   
     # Load the data from the csv file, and parse the dates to datetime format
-    df_TAT = pd.read_excel("Vorlage_TAT_Lithium.xlsx", header=[0, 1])
+    df_TAT = pd.read_excel("Data-Exploration/Vorlage_TAT_Lithium.xlsx", header=[0, 1])
 
     # Ab der dritten Spalte die Werte in datetime konvertieren
     for col in df_TAT.columns[2:]:  # Nur ab der dritten Spalte
