@@ -4,3 +4,4 @@ streamlit-authenticator
 streamlit
 plotly
 seaborn
+openpyxl
