@@ -8,8 +8,8 @@ import numpy as np
 import matplotlib.dates as mdates
 from matplotlib.ticker import ScalarFormatter
 
-def process (): 
-    df_TAT, phases = load_data()
+def process (uploaded_file): 
+    df_TAT, phases = load_data(uploaded_file)
     df_TAT = calculate_TAT(df_TAT, phases)
     # Dynamisch die Zeitspalten basierend auf den Phasen-Schlüsseln auswählen
     time_columns = [f"{phase} in Minuten" for phase in phases.keys()]
@@ -18,10 +18,13 @@ def process ():
     plot_cleaned(df_cleaned, time_columns) 
     return df_cleaned
 
-def load_data ():
-  
-    # Load the data from the csv file, and parse the dates to datetime format
-    df_TAT = pd.read_excel("./Data-Exploration/Vorlage_TAT_Lithium.xlsx", header=[0, 1])
+def load_data (uploaded_file):
+
+    try:
+        if uploaded_file.name.endswith(".xlsx"):
+            df_TAT = pd.read_excel(uploaded_file,header=[0, 1])
+    except Exception as e:
+        st.error(f"Fehler beim Lesen der Datei: {e}")
 
     # Ab der dritten Spalte die Werte in datetime konvertieren
     for col in df_TAT.columns[2:]:  # Nur ab der dritten Spalte
