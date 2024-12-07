@@ -8,15 +8,16 @@ import numpy as np
 import matplotlib.dates as mdates
 from matplotlib.ticker import ScalarFormatter
 
-def process (uploaded_file): 
+def process (uploaded_file,remove_outliers_option): 
     df_TAT, phases = load_data(uploaded_file)
     df_TAT = calculate_TAT(df_TAT, phases)
     # Dynamisch die Zeitspalten basierend auf den Phasen-Schlüsseln auswählen
     time_columns = [f"{phase} in Minuten" for phase in phases.keys()]
-    plot(df_TAT, phases, time_columns)
-    df_cleaned = remove_outliers(df_TAT, time_columns)
-    plot_cleaned(df_cleaned, time_columns) 
-    return df_cleaned
+    if remove_outliers_option:
+        df_cleaned = remove_outliers(df_TAT, time_columns)
+        return df_cleaned, time_columns
+    else: 
+        return df_TAT, time_columns
 
 def load_data (uploaded_file):
 
@@ -136,37 +137,24 @@ def plot_phase(df, phase_column, time_column='Eingang', time_format='%Y-%m-%d', 
     # Diagramm anzeigen
     plt.show()
 
-def plot (df_TAT, phases, time_columns):
-    # Dynamisch durch das Dictionary gehen und Diagramme erstellen
-    for phase, steps in phases.items():
-            # Name der Spalte mit Phase und Schritt
-            phase_column = f"{phase} in Minuten"
-            # Diagramm für jede Phase generieren
-            plot_phase(df_TAT, phase_column, time_column=df_TAT.columns[2], time_format='%Y-%m-%d', title=phase)
-
-
+def box_whiskers_plot (df_TAT, time_columns):
+    
     # Melt the DataFrame to long format for seaborn
     df_melted = df_TAT.melt(id_vars=[df_TAT.columns[2]], value_vars=time_columns, var_name='Phase', value_name='Time (minutes)')
-
-    # Create a box and whiskers plot
-    plt.figure(figsize=(10, 6))
-    sns.boxplot(x='Phase', y='Time (minutes)', data=df_melted)
-    plt.title('Time for Different Phases')
-    plt.ylabel('Time (minutes)')
-    plt.xlabel('Phase')
-    plt.show()
 
 
     # Create separate box and whiskers plots for each phase
     phases_list = df_melted['Phase'].unique()
+    # Plots erstellen und in Streamlit anzeigen
     for phase in phases_list:
-        plt.figure(figsize=(10, 6))
-        sns.boxplot(y='Time (minutes)', data=df_melted[df_melted['Phase'] == phase])
-        plt.title(f'Time for {phase}')
-        plt.ylabel('Time (minutes)')
-        plt.xlabel(phase)
-        plt.show()
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.boxplot(y='Time (minutes)', data=df_melted[df_melted['Phase'] == phase], ax=ax)
+        ax.set_title(f'Time for {phase}')
+        ax.set_ylabel('Time (minutes)')
+        ax.set_xlabel(phase)
+        st.pyplot(fig)  # Zeigt den aktuellen Plot in Streamlit an      
 
+def pie_chart (df_TAT, time_columns):
     # Sum the total time for each phase
     phase_sums = df_TAT[time_columns].sum()
 
@@ -175,6 +163,7 @@ def plot (df_TAT, phases, time_columns):
     plt.pie(phase_sums, labels=phase_sums.index, autopct='%1.1f%%', startangle=140)
     plt.title('Total Time Distribution for Each Phase')
     plt.show()
+
 
 # Function to remove outliers using IQR
 def remove_outliers_column(df, column):
@@ -193,95 +182,28 @@ def remove_outliers(df_TAT, time_columns):
 
     return df_cleaned
 
-def plot_cleaned (df_cleaned, time_columns):
-    # Melt the cleaned DataFrame to long format for seaborn
-    df_melted_cleaned = df_cleaned.melt(id_vars=[df_cleaned.columns[2]], value_vars=time_columns, var_name='Phase', value_name='Time (minutes)')
 
-    # Create a box and whiskers plot without outliers
-    plt.figure(figsize=(10, 6))
-    sns.boxplot(x='Phase', y='Time (minutes)', data=df_melted_cleaned, showfliers=False)
-    plt.title('Time for Different Phases (Without Outliers)')
-    plt.ylabel('Time (minutes)')
-    plt.xlabel('Phase')
-    plt.show()
-
-    # Create separate box and whiskers plots for each phase using the cleaned DataFrame
-    phases_cleaned = df_melted_cleaned['Phase'].unique()
-    for phase in phases_cleaned:
-        plt.figure(figsize=(10, 6))
-        sns.boxplot(y='Time (minutes)', data=df_melted_cleaned[df_melted_cleaned['Phase'] == phase],showfliers=False)
-        plt.title(f'Time for {phase} (Cleaned Data)')
-        plt.ylabel('Time (minutes)')
-        plt.xlabel(phase)
-        plt.show()
-
+def histogramm (df_TAT, time_columns):
     # Histogram for each phase
     for phase in time_columns:
         plt.figure(figsize=(10, 6))
-        sns.histplot(df_cleaned[phase], bins=10, kde=True)
+        sns.histplot(df_TAT[phase], bins=10, kde=True)
         plt.title(f'Histogram of {phase}')
         plt.xlabel('Time (minutes)')
         plt.ylabel('Frequency')
         plt.show()
 
+def trend (df_TAT, time_columns):
     # Line plot to show the trend of TAT over time
     plt.figure(figsize=(10, 6))
     for phase in time_columns:
-        sns.lineplot(x=df_cleaned['Eingang'], y=df_cleaned[phase], label=phase)
+        sns.lineplot(x=df_TAT['Eingang'], y=df_TAT[phase], label=phase)
     plt.title('Trend of TAT Over Time')
     plt.xlabel('Date and Time')
     plt.ylabel('Time (minutes)')
     plt.legend()
     plt.show()
 
-    # Histogram for each phase without outliers
-    for phase in time_columns:
-        plt.figure(figsize=(10, 6))
-        sns.histplot(df_cleaned[phase], bins=10, kde=True)
-        plt.title(f'Histogram of {phase}')
-        plt.xlabel('Time (minutes)')
-        plt.ylabel('Frequency')
-        plt.show()
 
-    # Line plot to show the trend of
-    # Melt the cleaned DataFrame to long format for seaborn
-    df_melted_cleaned = df_cleaned.melt(id_vars=[df_cleaned.columns[2]], value_vars=time_columns, var_name='Phase', value_name='Time (minutes)')
-
-    # Create a box and whiskers plot without outliers
-    plt.figure(figsize=(10, 6))
-    sns.boxplot(x='Phase', y='Time (minutes)', data=df_melted_cleaned, showfliers=False)
-    plt.title('Time for Different Phases (Without Outliers)')
-    plt.ylabel('Time (minutes)')
-    plt.xlabel('Phase')
-    plt.show()
-
-    # Create separate box and whiskers plots for each phase using the cleaned DataFrame
-    phases_cleaned = df_melted_cleaned['Phase'].unique()
-    for phase in phases_cleaned:
-        plt.figure(figsize=(10, 6))
-        sns.boxplot(y='Time (minutes)', data=df_melted_cleaned[df_melted_cleaned['Phase'] == phase],showfliers=False)
-        plt.title(f'Time for {phase} (Cleaned Data)')
-        plt.ylabel('Time (minutes)')
-        plt.xlabel(phase)
-        plt.show()
-
-    # Histogram for each phase without outliers
-    for phase in time_columns:
-        plt.figure(figsize=(10, 6))
-        sns.histplot(df_cleaned[phase], bins=10, kde=True)
-        plt.title(f'Histogram of {phase}')
-        plt.xlabel('Time (minutes)')
-        plt.ylabel('Frequency')
-        plt.show()
-
-    # Line plot to show the trend of TAT over time
-    plt.figure(figsize=(10, 6))
-    for phase in time_columns:
-        sns.lineplot(x=df_cleaned['Eingang'], y=df_cleaned[phase], label=phase)
-    plt.title('Trend of TAT Over Time')
-    plt.xlabel('Date and Time')
-    plt.ylabel('Time (minutes)')
-    plt.legend()
-    plt.show()
 
 
