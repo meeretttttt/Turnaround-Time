@@ -98,44 +98,24 @@ def calculate_TAT (df_TAT, phases):
 
     return df_TAT
 
+# Function to remove outliers using IQR
+def remove_outliers_column(df, column):
+    Q1 = df[column].quantile(0.25)
+    Q3 = df[column].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    return df[(df[column] >= lower_bound) & (df[column] <= upper_bound)]
+
+def remove_outliers(df_TAT, time_columns):
+    # Remove outliers for each phase
+    df_cleaned = df_TAT.copy()
+    for phase in time_columns:
+        df_cleaned = remove_outliers_column(df_cleaned, phase)
+
+    return df_cleaned
 
 # # Diagramme
-
-def plot_phase(df, phase_column, time_column='Eingang', time_format='%Y-%m-%d', title='Phase Plot'):
-    """
-    Dynamisches Plotten von Daten für jede Phase.
-    
-    Parameters:
-        df (pd.DataFrame): DataFrame mit den Daten
-        phase_column (str): Die Spalte, die die Phase repräsentiert (z. B. 'Präanalytische Phase in Minuten')
-        time_column (str): Die Spalte, die das Datum/Zeit enthält (Standard: 'Eingang')
-        time_format (str): Format für das Datum auf der x-Achse (Standard: '%Y-%m-%d')
-        title (str): Titel des Diagramms
-    """
-    # Liniendiagramm erstellen
-    fig = plt.figure(figsize=(10, 6))
-    sns.lineplot(x=df[time_column], y=df[phase_column], marker='o')
-
-    # Achsenanpassungen
-    ax = plt.gca()
-
-    # Datumsformat auf der x-Achse anpassen
-    ax.xaxis.set_major_formatter(mdates.DateFormatter(time_format))
-
-    # Wissenschaftliche Notation auf der y-Achse deaktivieren
-    ax.yaxis.set_major_formatter(ScalarFormatter())
-    ax.yaxis.get_offset_text().set_visible(False)  # Optional: Offset-Text entfernen
-
-    # Datumswerte auf der x-Achse schön formatieren
-    fig.autofmt_xdate()
-
-    # Titel und Achsenbeschriftungen hinzufügen
-    plt.title(title)
-    plt.xlabel('Date and Time')
-    plt.ylabel('Time (minutes)')
-
-    # Diagramm anzeigen
-    plt.show()
 
 def box_whiskers_plot (df_TAT, time_columns):
     
@@ -159,51 +139,53 @@ def pie_chart (df_TAT, time_columns):
     phase_sums = df_TAT[time_columns].sum()
 
     # Create a pie chart
-    plt.figure(figsize=(10, 6))
-    plt.pie(phase_sums, labels=phase_sums.index, autopct='%1.1f%%', startangle=140)
-    plt.title('Total Time Distribution for Each Phase')
-    plt.show()
-
-
-# Function to remove outliers using IQR
-def remove_outliers_column(df, column):
-    Q1 = df[column].quantile(0.25)
-    Q3 = df[column].quantile(0.75)
-    IQR = Q3 - Q1
-    lower_bound = Q1 - 1.5 * IQR
-    upper_bound = Q3 + 1.5 * IQR
-    return df[(df[column] >= lower_bound) & (df[column] <= upper_bound)]
-
-def remove_outliers(df_TAT, time_columns):
-    # Remove outliers for each phase
-    df_cleaned = df_TAT.copy()
-    for phase in time_columns:
-        df_cleaned = remove_outliers_column(df_cleaned, phase)
-
-    return df_cleaned
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.pie(phase_sums, labels=phase_sums.index, autopct='%1.1f%%', startangle=140)
+    ax.set_title('Total Time Distribution for Each Phase')
+    st.pyplot(fig) # Direkt in Streamlit anzeigen
 
 
 def histogramm (df_TAT, time_columns):
     # Histogram for each phase
     for phase in time_columns:
-        plt.figure(figsize=(10, 6))
-        sns.histplot(df_TAT[phase], bins=10, kde=True)
-        plt.title(f'Histogram of {phase}')
-        plt.xlabel('Time (minutes)')
-        plt.ylabel('Frequency')
-        plt.show()
+        # Erstelle ein neues Diagramm für jede Phase
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.histplot(df_TAT[phase], bins=10, kde=True, ax=ax)
+        ax.set_title(f'Histogram of {phase}')
+        ax.set_xlabel('Time (minutes)')
+        ax.set_ylabel('Frequency')
+        st.pyplot(fig) # Direkt in Streamlit anzeigen
 
-def trend (df_TAT, time_columns):
+def trend_total (df_TAT):
     # Line plot to show the trend of TAT over time
-    plt.figure(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.lineplot(x=df_TAT['Eingang'], y=df_TAT["Total_TAT in Minuten"], label='Total TAT', ax=ax)
+    ax.set_title('Trend of Total TAT Over Time')
+    ax.set_xlabel('Date and Time')
+    ax.set_ylabel('Time (minutes)')
+    ax.legend()
+    # x-Achsen-Beschriftung rotieren
+    plt.xticks(rotation=45)
+    st.pyplot(fig)     # Diagramm direkt in Streamlit anzeigen
+
+
+
+def trend_per_phase(df_TAT, time_columns):
+    """
+    Erstellt ein separates Liniendiagramm für jede Phase und zeigt es direkt in Streamlit an.
+    """
     for phase in time_columns:
-        sns.lineplot(x=df_TAT['Eingang'], y=df_TAT[phase], label=phase)
-    plt.title('Trend of TAT Over Time')
-    plt.xlabel('Date and Time')
-    plt.ylabel('Time (minutes)')
-    plt.legend()
-    plt.show()
+        # Neues Diagramm für jede Phase erstellen
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.lineplot(x=df_TAT['Eingang'], y=df_TAT[phase], ax=ax, label=phase)
+        ax.set_title(f'Trend of {phase} Over Time')
+        ax.set_xlabel('Date and Time')
+        ax.set_ylabel('Time (minutes)')
+        ax.legend()
+        # x-Achsen-Beschriftung rotieren
+        plt.xticks(rotation=45)
 
-
-
+        # Diagramm direkt in Streamlit anzeigen
+        st.subheader(f"Trend-Diagramm: {phase}")
+        st.pyplot(fig)
 
