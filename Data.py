@@ -36,8 +36,8 @@ def load_data (uploaded_file):
 
     # Iteration über die Spalten ab der dritten
     for col in df_TAT.columns[2:]:
-        phase = col[0].strip()  # Übergeordnete Phase
-        step = col[1].strip()   # Untergeordneter Schritt
+        phase = col[0]  # Übergeordnete Phase
+        step = col[1]   # Untergeordneter Schritt
         
         # Phase hinzufügen, falls noch nicht vorhanden
         if phase not in phases:
@@ -189,3 +189,92 @@ def trend_per_phase(df_TAT, time_columns):
         st.subheader(f"Trend-Diagramm: {phase}")
         st.pyplot(fig)
 
+def weekday_comparison (df_TAT, time_columns):
+    """
+    Vergleich der durchschnittlichen TAT-Zeiten nach Wochentagen.
+    """
+    # Sicherstellen, dass die Spalte 'Eingang' datetime-Form hat
+    df_TAT['Eingang'] = pd.to_datetime(df_TAT['Eingang'], errors='coerce')
+
+    # Wochentagsspalte hinzufügen (0=Montag, 6=Sonntag)
+    df_TAT['Wochentag'] = df_TAT['Eingang'].dt.weekday
+
+    # Durchschnittliche Zeit für jeden Wochentag berechnen
+    weekday_avg = df_TAT.groupby('Wochentag')[time_columns].mean()
+
+    # Sicherstellen, dass alle Wochentage vorhanden sind
+    full_weekdays = pd.DataFrame(index=range(7), columns=time_columns)  # Index von 0 bis 6
+    weekday_avg = full_weekdays.combine_first(weekday_avg)  # Fehlende Tage auffüllen
+
+    # Wochentagsnamen hinzufügen
+    weekday_avg.index = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
+
+    # Visualisierung
+    fig, ax = plt.subplots(figsize=(10, 6))
+    weekday_avg.plot(kind='bar', ax=ax, cmap='viridis', legend=True)
+    ax.set_title('Durchschnittliche TAT-Zeit nach Wochentagen')
+    ax.set_xlabel('Wochentag')
+    ax.set_ylabel('Zeit (Minuten)')
+    plt.xticks(rotation=45)
+    st.pyplot(fig)
+
+def weekday_comparison_line(df_TAT, time_columns):
+    """
+    Vergleich der durchschnittlichen TAT-Zeiten nach Wochentagen.
+    """
+    # Sicherstellen, dass die Spalte 'Eingang' datetime-Form hat
+    df_TAT['Eingang'] = pd.to_datetime(df_TAT['Eingang'], errors='coerce')
+
+    # Wochentagsspalte hinzufügen (0=Montag, 6=Sonntag)
+    df_TAT['Wochentag'] = df_TAT['Eingang'].dt.weekday
+
+    # Hinzufügen der Woche-Spalte
+    df_TAT['Woche'] = df_TAT['Eingang'].dt.isocalendar().week
+
+    # Durchschnittliche Zeit pro Woche und Wochentag berechnen
+    weekly_avg = df_TAT.groupby(['Woche', 'Wochentag'])[time_columns].mean()
+
+    # Umwandeln des MultiIndex in eine flache Struktur
+    weekly_avg = weekly_avg.reset_index()
+
+    # Pivotieren, um Wochentage als Spalten zu erhalten
+    weekly_avg_pivot = weekly_avg.pivot(index='Woche', columns='Wochentag', values=time_columns[0])
+
+    # Sicherstellen, dass alle Wochentage (0=Montag, 6=Sonntag) als Spalten vorhanden sind
+    weekly_avg_pivot = weekly_avg_pivot.reindex(columns=range(7), fill_value=0)
+
+    # Fehlende Werte mit 0 füllen
+    weekly_avg_pivot = weekly_avg_pivot.fillna(0)
+
+    # Wochentagsnamen hinzufügen
+    weekly_avg_pivot.columns = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
+
+    # Visualisierung
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Erstellen Sie eine leere Liste für die Linien
+    lines = []
+    labels = []
+
+    # Die Linien für alle Wochentage zeichnen, auch wenn der Wert 0 ist
+    for column in weekly_avg_pivot.columns:
+        line, = ax.plot(weekly_avg_pivot.index, weekly_avg_pivot[column], label=column, marker='o', linestyle='-', markersize=5)
+        lines.append(line)
+        labels.append(column)
+
+
+    ax.set_title('Durchschnittliche TAT-Zeit pro Wochentag und Woche')
+    ax.set_xlabel('Woche')
+    ax.set_ylabel('Zeit (Minuten)')
+    ax.legend(title='Wochentag')
+    plt.xticks(rotation=45)
+
+     # Streamlit Widgets für das Anzeigen/Verbergen von Linien (horizontal)
+    columns = st.columns(len(lines))  # Erstellen von Spalten für jede Linie
+
+    for i, (line, label) in enumerate(zip(lines, labels)):
+        with columns[i]:  # Jede Checkbox in einer eigenen Spalte
+            if not st.checkbox(f'{label}', value=True):
+                line.set_visible(False)
+
+    st.pyplot(fig)

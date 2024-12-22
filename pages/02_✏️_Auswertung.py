@@ -1,6 +1,6 @@
 import streamlit as st
 
-
+st.title('Auswertung')
 
  # Upload-Button
 uploaded_file = st.file_uploader("Datei hochladen", type=["xlsx"])
@@ -9,7 +9,7 @@ uploaded_file = st.file_uploader("Datei hochladen", type=["xlsx"])
 if uploaded_file:
     st.session_state["uploaded_file"] = uploaded_file  # Datei speichern
     if st.button("Weiter"):
-       st.switch_page("pages/03_Diagramm.py")    # Navigation auf die Upload-Seite
+       st.switch_page("pages/03_📊_Diagramme.py")    # Navigation auf die Upload-Seite
 
 
 # Layout mit Spalten erstellen
