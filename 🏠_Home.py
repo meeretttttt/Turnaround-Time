@@ -7,7 +7,8 @@ st.title('Turnaround Time Calculator')
 st.subheader("Mithilfe dieser App können die Turnaround Time von laboranalytischen Tests berechnet und visualisiert werden")
 st.subheader("Anleitung")
 st.write ("1. Laden Sie die Vorlage (Excel-Datei) herunter")
-st.write ("2. Füllen Sie die Vorlage mit Ihren Daten, das Zeitformat sollte wie folgt sein: TT.MM.JJJJ hh:mm:ss")
+st.write ("2. Füllen Sie die Vorlage mit Ihren Daten, das Zeitformat sollte wie folgt sein: TT.MM.JJJJ hh:mm:ss, die ersten beiden Spalten sollten nicht verändert werden\
+ die Checkpoints können selber bei der entsprechenden Phase eingetragen werden, es sollte in jeder Spalte ein andere Überschrift stehen")
 st.write ("3. Mit dem Button Auswertung kann die gewünschte Datei hochgeladen werden")
 
 
