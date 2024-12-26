@@ -8,9 +8,13 @@ import numpy as np
 import matplotlib.dates as mdates
 from matplotlib.ticker import ScalarFormatter
 
+first_checkpoint_col = None
+
 def process (uploaded_file,remove_outliers_option): 
     df_TAT, phases = load_data(uploaded_file)
     df_TAT = calculate_TAT(df_TAT, phases)
+    global first_checkpoint_col 
+    first_checkpoint_col = df_TAT.columns[2]
     # Dynamisch die Zeitspalten basierend auf den Phasen-Schlüsseln auswählen
     time_columns = [f"{phase} in Minuten" for phase in phases.keys()]
     if remove_outliers_option:
@@ -159,7 +163,7 @@ def histogramm (df_TAT, time_columns):
 def trend_total (df_TAT):
     # Line plot to show the trend of TAT over time
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.lineplot(x=df_TAT['Eingang'], y=df_TAT["Total_TAT in Minuten"], label='Total TAT', ax=ax)
+    sns.lineplot(x=df_TAT[first_checkpoint_col], y=df_TAT["Total_TAT in Minuten"], label='Total TAT', ax=ax)
     ax.set_title('Trend of Total TAT Over Time')
     ax.set_xlabel('Date and Time')
     ax.set_ylabel('Time (minutes)')
@@ -177,7 +181,7 @@ def trend_per_phase(df_TAT, time_columns):
     for phase in time_columns:
         # Neues Diagramm für jede Phase erstellen
         fig, ax = plt.subplots(figsize=(10, 6))
-        sns.lineplot(x=df_TAT['Eingang'], y=df_TAT[phase], ax=ax, label=phase)
+        sns.lineplot(x=df_TAT[first_checkpoint_col], y=df_TAT[phase], ax=ax, label=phase)
         ax.set_title(f'Trend of {phase} Over Time')
         ax.set_xlabel('Date and Time')
         ax.set_ylabel('Time (minutes)')
@@ -193,11 +197,11 @@ def weekday_comparison (df_TAT, time_columns):
     """
     Vergleich der durchschnittlichen TAT-Zeiten nach Wochentagen.
     """
-    # Sicherstellen, dass die Spalte 'Eingang' datetime-Form hat
-    df_TAT['Eingang'] = pd.to_datetime(df_TAT['Eingang'], errors='coerce')
+    # Sicherstellen, dass die 1. Datum-Spalte datetime-Form hat
+    df_TAT[first_checkpoint_col] = pd.to_datetime(df_TAT[first_checkpoint_col], errors='coerce')
 
     # Wochentagsspalte hinzufügen (0=Montag, 6=Sonntag)
-    df_TAT['Wochentag'] = df_TAT['Eingang'].dt.weekday
+    df_TAT['Wochentag'] = df_TAT[first_checkpoint_col].dt.weekday
 
     # Durchschnittliche Zeit für jeden Wochentag berechnen
     weekday_avg = df_TAT.groupby('Wochentag')[time_columns].mean()
@@ -222,14 +226,14 @@ def weekday_comparison_line(df_TAT, time_columns):
     """
     Vergleich der durchschnittlichen TAT-Zeiten nach Wochentagen.
     """
-    # Sicherstellen, dass die Spalte 'Eingang' datetime-Form hat
-    df_TAT['Eingang'] = pd.to_datetime(df_TAT['Eingang'], errors='coerce')
+    # Sicherstellen, dass die 1. Datum-Spalte datetime-Form hat
+    df_TAT[first_checkpoint_col] = pd.to_datetime(df_TAT[first_checkpoint_col], errors='coerce')
 
     # Wochentagsspalte hinzufügen (0=Montag, 6=Sonntag)
-    df_TAT['Wochentag'] = df_TAT['Eingang'].dt.weekday
+    df_TAT['Wochentag'] = df_TAT[first_checkpoint_col].dt.weekday
 
     # Hinzufügen der Woche-Spalte
-    df_TAT['Woche'] = df_TAT['Eingang'].dt.isocalendar().week
+    df_TAT['Woche'] = df_TAT[first_checkpoint_col].dt.isocalendar().week
 
     # Durchschnittliche Zeit pro Woche und Wochentag berechnen
     weekly_avg = df_TAT.groupby(['Woche', 'Wochentag'])[time_columns].mean()
