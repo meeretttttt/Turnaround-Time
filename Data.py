@@ -133,8 +133,8 @@ def box_whiskers_plot (df_TAT, time_columns):
     for phase in phases_list:
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.boxplot(y='Time (minutes)', data=df_melted[df_melted['Phase'] == phase], ax=ax)
-        ax.set_title(f'Time for {phase}')
-        ax.set_ylabel('Time (minutes)')
+        ax.set_title(f'Zeit der {phase}')
+        ax.set_ylabel('TAT (Minuten)')
         ax.set_xlabel(phase)
         st.pyplot(fig)  # Zeigt den aktuellen Plot in Streamlit an      
 
@@ -145,7 +145,7 @@ def pie_chart (df_TAT, time_columns):
     # Create a pie chart
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.pie(phase_sums, labels=phase_sums.index, autopct='%1.1f%%', startangle=140)
-    ax.set_title('Total Time Distribution for Each Phase')
+    ax.set_title('Totale TAT pro Phase')
     st.pyplot(fig) # Direkt in Streamlit anzeigen
 
 
@@ -155,18 +155,18 @@ def histogramm (df_TAT, time_columns):
         # Erstelle ein neues Diagramm für jede Phase
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.histplot(df_TAT[phase], bins=10, kde=True, ax=ax)
-        ax.set_title(f'Histogram of {phase}')
-        ax.set_xlabel('Time (minutes)')
-        ax.set_ylabel('Frequency')
+        ax.set_title(f'Histogram der {phase}')
+        ax.set_xlabel('TAT (Minuten)')
+        ax.set_ylabel('Häufigkeit')
         st.pyplot(fig) # Direkt in Streamlit anzeigen
 
 def trend_total (df_TAT):
     # Line plot to show the trend of TAT over time
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.lineplot(x=df_TAT[first_checkpoint_col], y=df_TAT["Total_TAT in Minuten"], label='Total TAT', ax=ax)
-    ax.set_title('Trend of Total TAT Over Time')
-    ax.set_xlabel('Date and Time')
-    ax.set_ylabel('Time (minutes)')
+    ax.set_title('Verlauf der Total TAT über die Zeit')
+    ax.set_xlabel('Datum and Uhrzeit')
+    ax.set_ylabel('TAT (Minuten)')
     ax.legend()
     # x-Achsen-Beschriftung rotieren
     plt.xticks(rotation=45)
@@ -182,15 +182,15 @@ def trend_per_phase(df_TAT, time_columns):
         # Neues Diagramm für jede Phase erstellen
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.lineplot(x=df_TAT[first_checkpoint_col], y=df_TAT[phase], ax=ax, label=phase)
-        ax.set_title(f'Trend of {phase} Over Time')
-        ax.set_xlabel('Date and Time')
-        ax.set_ylabel('Time (minutes)')
+        ax.set_title(f'Verlauf der {phase} über die Zeit')
+        ax.set_xlabel('Datum und Uhrzeit')
+        ax.set_ylabel('TAT (Minuten)')
         ax.legend()
         # x-Achsen-Beschriftung rotieren
         plt.xticks(rotation=45)
 
         # Diagramm direkt in Streamlit anzeigen
-        st.subheader(f"Trend-Diagramm: {phase}")
+        st.subheader(f"Veralufs-Diagramm: {phase}")
         st.pyplot(fig)
 
 def weekday_comparison (df_TAT, time_columns):
@@ -218,7 +218,7 @@ def weekday_comparison (df_TAT, time_columns):
     weekday_avg.plot(kind='bar', ax=ax, cmap='viridis', legend=True)
     ax.set_title('Durchschnittliche TAT-Zeit nach Wochentagen')
     ax.set_xlabel('Wochentag')
-    ax.set_ylabel('Zeit (Minuten)')
+    ax.set_ylabel('TAT (Minuten)')
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
@@ -269,7 +269,7 @@ def weekday_comparison_line(df_TAT, time_columns):
 
     ax.set_title('Durchschnittliche TAT-Zeit pro Wochentag und Woche')
     ax.set_xlabel('Woche')
-    ax.set_ylabel('Zeit (Minuten)')
+    ax.set_ylabel('TAT (Minuten)')
     ax.legend(title='Wochentag')
     plt.xticks(rotation=45)
 

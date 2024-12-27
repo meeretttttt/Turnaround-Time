@@ -36,6 +36,6 @@ with col2:
     st.session_state["boxplot_selected"] = st.checkbox("Box and Whiskers Plot", value=True)
     st.session_state["histogram_selected"] = st.checkbox("Histogramm", value=True)
     st.session_state["pie_chart_selected"] = st.checkbox("Pie-Chart")
-    st.session_state["trend_selected"] = st.checkbox("Trend")
-    st.session_state["weekday_comparison_selected"] = st.checkbox("Wochentagvergleich")
+    st.session_state["trend_selected"] = st.checkbox("Verlauf")
+    st.session_state["weekday_comparison_selected"] = st.checkbox("Wochentagsvergleich")
 

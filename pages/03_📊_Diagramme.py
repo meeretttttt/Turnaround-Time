@@ -8,6 +8,9 @@ from Data import trend_per_phase
 from Data import weekday_comparison
 from Data import weekday_comparison_line
 
+st.set_page_config(page_title= "Diagramme", page_icon= None, layout="centered", initial_sidebar_state="auto", menu_items= None) 
+
+
 st.title('Diagramme')
 
 # Überprüfen, ob eine Datei vorhanden ist
@@ -40,14 +43,14 @@ if "uploaded_file" in st.session_state:
         pie_chart (df, time_columns)
 
     if trend_selected:
-        st.subheader("Trend")
+        st.subheader("Verlauf")
         trend_total (df)
         trend_per_phase(df, time_columns)
 
     if weekday_comparison_selected:
-        st.subheader("Wochentagvergleich")
+        st.subheader("Wochentagsvergleich")
         weekday_comparison (df,time_columns)
-        st.subheader("Wochentagvergleich (Line Plot)")
+        st.subheader("Wochentagsvergleich (Line Plot)")
         weekday_comparison_line (df,time_columns)
         # Füge hier den Code zur Anzeige des Wochentagvergleichs ein
 
